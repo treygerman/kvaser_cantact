@@ -132,6 +132,15 @@ License
 
 WTFPL
 
+This program is free software. It comes without any warranty, to the extent
+permitted by applicable law. You can redistribute it and/or modify it under the
+terms of the Do What The Fuck You Want To Public License, Version 2, as
+published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+
+Third-party files keep their own licenses: the STMicroelectronics HAL, startup
+files and linker scripts are BSD 3-Clause, and the Arm CMSIS headers are
+Apache 2.0.
+
 
 [CANtact]: <https://linklayer.github.io/cantact/>
 [CANable]: <https://canable.io/>

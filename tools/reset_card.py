@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# This program is free software. It comes without any warranty, to
+# the extent permitted by applicable law. You can redistribute it
+# and/or modify it under the terms of the Do What The Fuck You Want
+# To Public License, Version 2, as published by Sam Hocevar. See
+# http://www.wtfpl.net/ for more details.
 """Send a Kvaser CMD_RESET_CARD_REQ to the emulated adapter with the given
 kv_serial. On the STM32F072 builds the firmware reboots straight into the ST
 DFU bootloader (no BOOT0 jumper needed); F042 builds simply reboot.
