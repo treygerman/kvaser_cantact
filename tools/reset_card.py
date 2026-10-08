@@ -4,8 +4,8 @@
 # and/or modify it under the terms of the Do What The Fuck You Want
 # To Public License, Version 2, as published by Sam Hocevar. See
 # http://www.wtfpl.net/ for more details.
-"""Send a Kvaser CMD_RESET_CARD_REQ to the emulated adapter with the given
-kv_serial. On the STM32F072 builds the firmware reboots straight into the ST
+"""Send CMD_RESET_CARD_REQ to the emulated adapter with the given kv_serial
+(or on the given network interface). On the STM32F072 builds the firmware reboots straight into the ST
 DFU bootloader (no BOOT0 jumper needed); F042 builds simply reboot.
 
 Runs as root on Linux: it unbinds kvaser_usb from the adapter's interface and
@@ -13,6 +13,7 @@ writes the 4-byte command on bulk OUT endpoint 0x02 through usbfs. Do not point
 it at a real Kvaser.
 
   reset_card.py <kv_serial>
+  reset_card.py --iface canX    for drivers without kv_serial (in-tree kvaser_usb)
   reset_card.py --auto [--exclude S1,S2,...]
       the one kvaser_usb interface whose kv_serial is not excluded
       (exclude every real Kvaser attached to the host)
@@ -53,6 +54,13 @@ def find_interface(serial):
 def main():
     args = sys.argv[1:]
     real = set()
+    if len(args) == 2 and args[0] == "--iface":
+        netdev = args[1]
+        intf_path = os.path.realpath(f"/sys/class/net/{netdev}/device")
+        if not os.path.exists(f"/sys/class/net/{netdev}/device"):
+            sys.exit(f"no interface {netdev}")
+        reset(netdev, intf_path, "(not reported)")
+        return
     if len(args) == 3 and args[0] == "--auto" and args[1] == "--exclude":
         real = {s for s in args[2].split(",") if s}
         args = args[:1]
@@ -75,6 +83,11 @@ def main():
         sys.exit(f"refusing: {serial} is excluded")
 
     netdev, intf_path = find_interface(serial)
+    reset(netdev, intf_path, serial)
+
+
+def reset(netdev, intf_path, serial):
+    """Unbind kvaser_usb from the interface and send the reset command."""
     intf = os.path.basename(intf_path)          # e.g. 2-12:1.0
     usbdev = os.path.dirname(intf_path)
     with open(f"{usbdev}/busnum") as f:

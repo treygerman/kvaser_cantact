@@ -1,4 +1,4 @@
-# Xvaser LL v2 firmware for STM32F042 based boards
+# Xvaser LL v2 firmware for STM32F042 and STM32F072 based boards
 
 Target hardware:
 * [CANtact] - opensource USB-CAN adapter project
@@ -33,10 +33,11 @@ Pin map, from `Hardware/UCAN V1.0 SCH.pdf` in the FYSETC/UCAN repo:
 | `CAN_S` (SN65HVD230 Rs; high = standby, 10k pull-down) | PC13, driven low at init |
 | BOOT0 | P2 pin 5; bridge to P2 pin 6 (+3.3 V) for ST ROM DFU |
 
-The emulated device reports USB `0bfd:0120` "Kvaser Leaf Light v2". Both of its
-serials come from the STM32's 96-bit unique ID, so each adapter is distinct:
+The device enumerates as "Xvaser LL v2". It keeps the USB ID `0bfd:0120` because
+that is what the Linux `kvaser_usb` driver binds to. Both of its serials come
+from the STM32's 96-bit unique ID, so each adapter is distinct:
 
-- The Kvaser serial (`kv_serial` in sysfs, used by udev naming) is the three ID
+- The card serial (`kv_serial` in sysfs, used by udev naming) is the three ID
   words XORed and mapped to 100000–999999.
 - The USB serial string is the full ID as 24 hex digits.
 
@@ -58,7 +59,7 @@ serials come from the STM32's 96-bit unique ID, so each adapter is distinct:
 
 To restore the stock firmware, flash the backup the same way.
 
-Once this firmware is running, BOOT0 is no longer needed. The Kvaser
+Once this firmware is running, BOOT0 is no longer needed. The protocol's
 `CMD_RESET_CARD_REQ` command makes the firmware detach from USB and reboot
 straight into the ST bootloader: a flag kept in `.noinit` RAM survives the
 reset, and `main` jumps to system memory at `0x1FFFC800` before any other
@@ -66,7 +67,7 @@ setup. Leaving DFU then boots the application normally. `tools/reset_card.py`
 sends that command from Linux: it unbinds `kvaser_usb` and writes through usbfs,
 so it needs root.
 
-    sudo tools/reset_card.py <kv_serial>     # then dfu-util -a 0 -s 0x08000000:leave -D <image>
+    sudo tools/reset_card.py <kv_serial>     # or --iface canX; then dfu-util -a 0 -s 0x08000000:leave -D <image>
 
 ### Validation
 
@@ -107,8 +108,8 @@ a 1 Mbit/s bus alone, so case (i) runs both nodes at once.
 Receive path: the CAN interrupt drains the 3-deep hardware FIFO into a RAM ring
 (128 frames on the F072). Received frames and TX acks wait for space in the USB
 response buffer instead of being dropped, and full TX queues backpressure the
-USB OUT endpoint. If frames are ever lost, the next frame carries the Kvaser
-overrun flag, so the host counts it in `rx_over_errors`.
+USB OUT endpoint. If frames are ever lost, the next frame carries the protocol's
+overrun flag (`MSGFLAG_OVERRUN`), so the host counts it in `rx_over_errors`.
 
 Stopping the channel, or the driver's flush request, clears the firmware's TX
 queue and RX ring. Frames queued while nobody acknowledged them are therefore
@@ -137,9 +138,22 @@ permitted by applicable law. You can redistribute it and/or modify it under the
 terms of the Do What The Fuck You Want To Public License, Version 2, as
 published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
 
-Third-party files keep their own licenses: the STMicroelectronics HAL, startup
-files and linker scripts are BSD 3-Clause, and the Arm CMSIS headers are
-Apache 2.0.
+The WTFPL covers this project's own code. Third-party files keep their own
+licenses and notices, as stated in their headers:
+
+- **STMicroelectronics HAL, CMSIS device headers, `system_stm32f0xx.c`,
+  startup files and linker scripts** (`Drivers/STM32F0xx_HAL_Driver`,
+  `Drivers/CMSIS/Device`, `startup_*.s`, `*_FLASH.ld`): BSD 3-Clause.
+- **STMicroelectronics USB Device Library** (`Middlewares/ST/STM32_USB_Device_Library`):
+  ST Ultimate Liberty license SLA0044 (www.st.com/SLA0044). This is not an
+  open-source license; among other terms, it limits use to ST microcontrollers.
+- **Arm CMSIS core headers** (`Drivers/CMSIS/Include`): Apache 2.0.
+- **Kvaser AB protocol definitions** (`Src/filo_cmds.h`, `Src/compilerassert.h`):
+  dual-licensed BSD-new or GPLv2.
+
+Kvaser and Leaf Light are trademarks of Kvaser AB. This project is not
+affiliated with or endorsed by Kvaser. To be usable with the Linux `kvaser_usb`
+driver, the firmware enumerates with Kvaser's USB vendor and product ID.
 
 
 [CANtact]: <https://linklayer.github.io/cantact/>

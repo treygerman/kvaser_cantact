@@ -4,11 +4,11 @@
 # and/or modify it under the terms of the Do What The Fuck You Want
 # To Public License, Version 2, as published by Sam Hocevar. See
 # http://www.wtfpl.net/ for more details.
-"""Validate the UCAN Kvaser emulation against a real Kvaser on a two-node bus.
+"""Validate the UCAN running this firmware against a real Kvaser on a two-node bus.
 
 Runs as root on Linux (interface configuration needs CAP_NET_ADMIN), with the
 emulated adapter (DUT) and a real Kvaser (peer) on an isolated two-node bus.
-Interfaces are found by Kvaser serial (`kv_serial` in sysfs) or given by name.
+Interfaces are found by card serial (`kv_serial` in sysfs) or given by name.
 Every case uses an exact loss oracle: each frame carries a sequence number,
 captures start before any transmission, and a case passes only if the received
 frames equal the sent ones in order with zero netdev drop/overrun deltas.
@@ -18,7 +18,7 @@ frames equal the sent ones in order with zero netdev drop/overrun deltas.
   validate_bench.py --dut-iface canX --peer-iface canY ...
   validate_bench.py --self-test     check that the oracle itself can fail
 
-Without --dut-serial the DUT is the one Kvaser-driven interface that is neither
+Without --dut-serial the DUT is the one kvaser_usb interface that is neither
 the peer nor a --protect-serial adapter (e.g. ones carrying other live buses).
 """
 import argparse
@@ -36,7 +36,7 @@ CAN_EFF_FLAG = 0x80000000
 CAN_RTR_FLAG = 0x40000000
 FRAME = struct.Struct("=IB3x8s")
 
-# Kvaser serials that must never be touched (adapters on other live buses);
+# Card serials (kv_serial) that must never be touched (adapters on other live buses);
 # filled from --protect-serial.
 PROTECTED_SERIALS = set()
 

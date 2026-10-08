@@ -56,7 +56,7 @@ uint8_t * USBD_FS_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 uint8_t* USBD_FS_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
   UNUSED(speed);
-  USBD_GetString( (uint8_t *)"Kvaser AB", USBD_StrDesc, length );
+  USBD_GetString( (uint8_t *)"Xvaser", USBD_StrDesc, length );
 
   return USBD_StrDesc;
 }
@@ -64,7 +64,7 @@ uint8_t* USBD_FS_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *le
 uint8_t* USBD_FS_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
   UNUSED(speed);
-  USBD_GetString( (uint8_t *)"Kvaser Leaf Light v2", USBD_StrDesc, length );
+  USBD_GetString( (uint8_t *)"Xvaser LL v2", USBD_StrDesc, length );
 
   return USBD_StrDesc;
 }

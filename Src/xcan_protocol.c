@@ -11,7 +11,7 @@
 
 #define XCAN_CHANNEL_MAX (1)
 
-/* Per-device Kvaser serial: fold the 96-bit STM32F0 unique ID to a 6-digit
+/* Per-device card serial: fold the 96-bit STM32F0 unique ID to a 6-digit
    decimal (100000..999999), as in the Filo301/kvaser_cantact fork. */
 static uint32_t xcan_serial_number( void )
 {

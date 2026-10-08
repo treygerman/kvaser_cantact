@@ -270,7 +270,7 @@ void xcan_can_set_loopback( uint8_t loopback )
   xcan_can_reinit();
 }
 
-/* Drop everything queued in either direction, as a Kvaser does when the
+/* Drop everything queued in either direction, as the real hardware does when the
    driver flushes or stops the channel; otherwise frames queued while the bus
    was unacknowledged go out the next time the interface comes up. */
 void xcan_can_flush_queues( void )
