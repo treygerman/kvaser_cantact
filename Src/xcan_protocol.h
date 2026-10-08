@@ -3,4 +3,5 @@
 
 void xcan_protocol_init( void );
 void xcan_protocol_poll( void );
-void xcan_protocol_process_data( uint8_t *ptr, uint16_t size );
+/* main.c: reset; on the F072 the next boot enters the ST DFU bootloader */
+void xcan_reset_to_bootloader( void );
